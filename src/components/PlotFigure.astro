@@ -1,9 +1,32 @@
 ---
 import * as Plot from "@observablehq/plot";
 import { JSDOM } from "jsdom";
+
 const { options } = Astro.props;
 
-const plot = Plot.plot({ ...options, document: new JSDOM("").window.document });
+const plot = Plot.plot({
+  ...options,
+  document: new JSDOM("").window.document,
+});
+
+const svg =
+  plot.tagName.toLowerCase() === "svg" ? plot : plot.querySelector("svg");
+
+if (svg) {
+  // Le graphique principal possède un nom accessible
+  svg.setAttribute("role", "img");
+
+  svg.setAttribute(
+    "aria-label",
+    options.ariaLabel || options.title || "Graphique de données",
+  );
+
+  // Masquer les éléments graphiques internes
+  // car le SVG principal possède déjà une description
+  svg.querySelectorAll("rect, g").forEach((element) => {
+    element.removeAttribute("aria-label");
+  });
+}
 ---
 
 <div set:html={plot.outerHTML} />
